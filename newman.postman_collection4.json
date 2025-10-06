@@ -1,0 +1,111 @@
+{
+	"info": {
+		"_postman_id": "0e6ff88f-8ad3-4039-91b5-a84d1a905df4",
+		"name": "newman",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48435234",
+		"_collection_link": "https://grig-2001-1612431.postman.co/workspace/Marty-Kingsley's-Workspace~c6c763c6-361d-4e82-8a08-e326e9f972b7/collection/48435234-0e6ff88f-8ad3-4039-91b5-a84d1a905df4?action=share&source=collection_link&creator=48435234"
+	},
+	"item": [
+		{
+			"name": "newman req",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const isTestEnv = pm.environment.get(\"base_url\") === \"http://users.bugred.ru\"\r",
+							"\r",
+							"if (isTestEnv) {\r",
+							"\r",
+							"const echoPostRequest = {\r",
+							"        url: 'http://users.bugred.ru/tasks/rest/createuser',\r",
+							"        method: 'POST',\r",
+							"        headers: { 'Content-Type': 'application/json' },\r",
+							"        body: {\r",
+							"            mode: \"raw\",\r",
+							"            raw: JSON.stringify({\r",
+							"                email: \"ceosouth@mail.ru\",\r",
+							"                name: \"Генеральный Ли\",\r",
+							"                tasks: [52],\r",
+							"                companies: [28],\r",
+							"                birthday: '08.09.1985',\r",
+							"                phone: '8-906-111223',\r",
+							"\r",
+							"\r",
+							"            })\r",
+							"        }\r",
+							"}\r",
+							"\r",
+							"pm.sendRequest(echoPostRequest, function(err, res){\r",
+							"    if (err) {console.log(err)} else {const data = res.json().name\r",
+							"    let hisName = data.slice(data.indexOf('Г'), data.indexOf('й') + 1);\r",
+							"    console.log(res.json())\r",
+							"    pm.environment.set('gendir', hisName)\r",
+							"    }\r",
+							"})\r",
+							"} else {\r",
+							"    console.log('Production stage - cannot create user')\r",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"let foundUser =  null\r",
+							"\r",
+							"pm.test(\"Found 1 user\", function(){\r",
+							"    pm.expect(pm.response.code).to.eql(231)\r",
+							"})\r",
+							"\r",
+							"pm.test('The fields are correct', function(){\r",
+							"    for (i = 0; i < jsonData.results.length; i++) {\r",
+							"        if (jsonData.results[i].email === 'ceosouth@mail.ru') {\r",
+							"            foundUser = jsonData.results[i];\r",
+							"            break;\r",
+							"        }\r",
+							"    }\r",
+							"pm.expect(foundUser).to.be.not.null\r",
+							"pm.expect(foundUser.name, \"Неверное имя\").to.include('Генеральный') \r",
+							"pm.expect(foundUser.birthday, \"Неверная дата рождения\").to.eql('08.09.1985') \r",
+							"pm.expect(foundUser.phone, \"Неверный телефон\").to.eql(\"8-906-111223\")\r",
+							"})\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/tasks/rest/magicsearch?query={{gendir}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"tasks",
+						"rest",
+						"magicsearch"
+					],
+					"query": [
+						{
+							"key": "query",
+							"value": "{{gendir}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
